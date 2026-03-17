@@ -197,8 +197,8 @@ export default function Stokely() {
             <>
               {/* ── Filters ── */}
               <div className="sk-filters">
-                <button className={`sk-filter-btn${filterProtein    ? " active-protein" : ""}`} onClick={() => toggle(setFilterProtein)}>💪 High Protein</button>
-                <button className={`sk-filter-btn${filterLowCal     ? " active-lowcal"  : ""}`} onClick={() => toggle(setFilterLowCal)}>⚡ Low Calorie</button>
+                <button className={`sk-filter-btn${filterProtein    ? " active-protein" : ""}`} onClick={() => toggle(setFilterProtein)}>💪 High Protein ≥10g</button>
+                <button className={`sk-filter-btn${filterLowCal     ? " active-lowcal"  : ""}`} onClick={() => toggle(setFilterLowCal)}>⚡ Low Calorie &lt;200cal</button>
                 <button className={`sk-filter-btn${filterRatio      ? " active-ratio"   : ""}`} onClick={() => toggle(setFilterRatio)}>📊 Protein Ratio &gt;25%</button>
                 <button className={`sk-filter-btn${filterVegetarian ? " active-veg"     : ""}`} onClick={() => toggle(setFilterVeg)}>🌱 Vegetarian</button>
                 <button className={`sk-filter-btn${filterVegan      ? " active-vegan"   : ""}`} onClick={() => toggle(setFilterVegan)}>🌿 Vegan</button>
@@ -229,15 +229,17 @@ export default function Stokely() {
                             filtered.map((item) => {
                               const nut = nutrition[item.menu_item_id];
                               const cal = nut?.calories != null ? Math.round(nut.calories) : null;
+                              const pro = nut?.protein  != null ? nut.protein.toFixed(1)   : null;
                               return (
                                 <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="sk-item">
                                   <div className="sk-item-left">
                                     <span className="sk-item-name">{item.menu_item_title}</span>
                                     <span className="sk-item-serving">{item.serving_size_display}</span>
                                   </div>
-                                  {cal !== null && (
-                                    <span className="sk-item-calories">{cal} cal</span>
-                                  )}
+                                  <div className="sk-item-badges">
+                                    {cal !== null && <span className="sk-item-calories">{cal} cal</span>}
+                                    {pro !== null && <span className="sk-item-protein">{pro}g protein</span>}
+                                  </div>
                                 </div>
                               );
                             })

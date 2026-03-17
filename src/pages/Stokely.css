@@ -190,3 +190,27 @@
 .sk-filter-btn.active-vegan  { background: #8BC34A; border-color: #8BC34A; color: #0A0A0A; }
 .sk-filter-btn.active-dairy  { background: #90CAF9; border-color: #90CAF9; color: #0A0A0A; }
 .sk-filter-btn.active-gluten { background: #FFCC80; border-color: #FFCC80; color: #0A0A0A; }
+
+.sk-item-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sk-item-protein {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4CAF50;
+  white-space: nowrap;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.25);
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+@media (max-width: 768px) {
+  .sk-item-badges { flex-direction: column; gap: 4px; align-items: flex-end; }
+  .sk-item-protein { font-size: 11px; padding: 2px 8px; }
+}
