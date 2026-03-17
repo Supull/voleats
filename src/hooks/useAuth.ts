@@ -16,15 +16,13 @@ export function useAuth(): AuthState {
   });
 
   useEffect(() => {
-    // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
         setState({ user, loading: false, error: null });
       } else {
-        // No user — sign in anonymously
         signInAnonymously(auth)
           .then(({ user }) => setState({ user, loading: false, error: null }))
-          .catch((err)    => setState({ user: null, loading: false, error: err.message }));
+          .catch((err: Error) => setState({ user: null, loading: false, error: err.message }));
       }
     });
 

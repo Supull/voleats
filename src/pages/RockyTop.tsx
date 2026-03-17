@@ -48,7 +48,7 @@ export default function RockyTop() {
 
   useEffect(() => {
     const date = getTodayDate();
-    const url  = `https://dining.utk.edu/wp-admin/admin-ajax.php?action=get_cached_menu&service_area_id=125621&date=${date}`;
+    const url  = `/api/menu?service_area_id=125621&date=${date}`;
 
     fetch(url)
       .then((res) => {
