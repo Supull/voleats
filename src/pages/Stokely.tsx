@@ -15,8 +15,12 @@ interface MenuItem {
 }
 
 interface NutritionItem {
-  calories: number | null;
-  protein:  number | null;
+  calories:        number | null;
+  protein:         number | null;
+  vegetarian:      string | null;
+  vegan:           string | null;
+  contains_milk:   string | null;
+  contains_gluten: string | null;
 }
 
 function getCurrentMeal(): MealPeriod {
@@ -57,13 +61,17 @@ function isHighRatio(nut: NutritionItem | undefined): boolean {
 
 export default function Stokely() {
   const navigate = useNavigate();
-  const [activePeriod, setActivePeriod]   = useState<MealPeriod>(getCurrentMeal());
-  const [menuItems, setMenuItems]         = useState<MenuItem[]>([]);
-  const [nutrition, setNutrition]         = useState<Record<string, NutritionItem>>({});
-  const [fetchStatus, setFetchStatus]     = useState<"loading" | "success" | "error">("loading");
-  const [filterProtein, setFilterProtein] = useState(false);
-  const [filterLowCal, setFilterLowCal]   = useState(false);
-  const [filterRatio, setFilterRatio]     = useState(false);
+  const [activePeriod, setActivePeriod]       = useState<MealPeriod>(getCurrentMeal());
+  const [menuItems, setMenuItems]             = useState<MenuItem[]>([]);
+  const [nutrition, setNutrition]             = useState<Record<string, NutritionItem>>({});
+  const [fetchStatus, setFetchStatus]         = useState<"loading" | "success" | "error">("loading");
+  const [filterProtein, setFilterProtein]     = useState(false);
+  const [filterLowCal, setFilterLowCal]       = useState(false);
+  const [filterRatio, setFilterRatio]         = useState(false);
+  const [filterVegetarian, setFilterVeg]      = useState(false);
+  const [filterVegan, setFilterVegan]         = useState(false);
+  const [filterDairyFree, setFilterDairyFree] = useState(false);
+  const [filterGlutenFree, setFilterGluten]   = useState(false);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
@@ -83,8 +91,15 @@ export default function Stokely() {
           const map: Record<string, NutritionItem> = {};
           const raw = nutritionData.data.nutrition;
           for (const id in raw) {
-            const entry = raw[id][0];
-            if (entry) map[id] = { calories: entry.calories ?? null, protein: entry.protein ?? null };
+            const e = raw[id][0];
+            if (e) map[id] = {
+              calories:        e.calories        ?? null,
+              protein:         e.protein         ?? null,
+              vegetarian:      e.vegetarian      ?? null,
+              vegan:           e.vegan           ?? null,
+              contains_milk:   e.contains_milk   ?? null,
+              contains_gluten: e.contains_gluten ?? null,
+            };
           }
           setNutrition(map);
         }
@@ -99,11 +114,18 @@ export default function Stokely() {
 
   const passesFilter = (item: MenuItem): boolean => {
     const nut = nutrition[item.menu_item_id];
-    if (filterProtein && !isHighProtein(nut)) return false;
-    if (filterLowCal  && !isLowCalorie(nut))  return false;
-    if (filterRatio   && !isHighRatio(nut))   return false;
+    if (filterProtein    && !isHighProtein(nut))             return false;
+    if (filterLowCal     && !isLowCalorie(nut))              return false;
+    if (filterRatio      && !isHighRatio(nut))               return false;
+    if (filterVegetarian && nut?.vegetarian      !== "Y")    return false;
+    if (filterVegan      && nut?.vegan           !== "Y")    return false;
+    if (filterDairyFree  && nut?.contains_milk   !== "N")    return false;
+    if (filterGlutenFree && nut?.contains_gluten !== "N")    return false;
     return true;
   };
+
+  const toggle = (setter: React.Dispatch<React.SetStateAction<boolean>>) =>
+    setter((p) => !p);
 
   return (
     <div className="dining-page">
@@ -175,24 +197,13 @@ export default function Stokely() {
             <>
               {/* ── Filters ── */}
               <div className="sk-filters">
-                <button
-                  className={`sk-filter-btn${filterProtein ? " active-protein" : ""}`}
-                  onClick={() => setFilterProtein((p) => !p)}
-                >
-                  💪 High Protein
-                </button>
-                <button
-                  className={`sk-filter-btn${filterLowCal ? " active-lowcal" : ""}`}
-                  onClick={() => setFilterLowCal((p) => !p)}
-                >
-                  ⚡ Low Calorie
-                </button>
-                <button
-                  className={`sk-filter-btn${filterRatio ? " active-ratio" : ""}`}
-                  onClick={() => setFilterRatio((p) => !p)}
-                >
-                  📊 Protein Ratio &gt;25%
-                </button>
+                <button className={`sk-filter-btn${filterProtein    ? " active-protein" : ""}`} onClick={() => toggle(setFilterProtein)}>💪 High Protein</button>
+                <button className={`sk-filter-btn${filterLowCal     ? " active-lowcal"  : ""}`} onClick={() => toggle(setFilterLowCal)}>⚡ Low Calorie</button>
+                <button className={`sk-filter-btn${filterRatio      ? " active-ratio"   : ""}`} onClick={() => toggle(setFilterRatio)}>📊 Protein Ratio &gt;25%</button>
+                <button className={`sk-filter-btn${filterVegetarian ? " active-veg"     : ""}`} onClick={() => toggle(setFilterVeg)}>🌱 Vegetarian</button>
+                <button className={`sk-filter-btn${filterVegan      ? " active-vegan"   : ""}`} onClick={() => toggle(setFilterVegan)}>🌿 Vegan</button>
+                <button className={`sk-filter-btn${filterDairyFree  ? " active-dairy"   : ""}`} onClick={() => toggle(setFilterDairyFree)}>🥛 Dairy-Free</button>
+                <button className={`sk-filter-btn${filterGlutenFree ? " active-gluten"  : ""}`} onClick={() => toggle(setFilterGluten)}>🌾 Gluten-Free</button>
               </div>
 
               {stations.length === 0 ? (

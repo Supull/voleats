@@ -185,3 +185,8 @@
   border-color: #4CAF50;
   color: #0A0A0A;
 }
+
+.sk-filter-btn.active-veg    { background: #4CAF50; border-color: #4CAF50; color: #0A0A0A; }
+.sk-filter-btn.active-vegan  { background: #8BC34A; border-color: #8BC34A; color: #0A0A0A; }
+.sk-filter-btn.active-dairy  { background: #90CAF9; border-color: #90CAF9; color: #0A0A0A; }
+.sk-filter-btn.active-gluten { background: #FFCC80; border-color: #FFCC80; color: #0A0A0A; }
