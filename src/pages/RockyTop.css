@@ -88,3 +88,29 @@
   white-space: nowrap;
   margin-left: 16px;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .rt-station-header {
+    padding: 12px 16px;
+  }
+
+  .rt-station-name {
+    font-size: 11px;
+  }
+
+  .rt-item {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .rt-item-name {
+    font-size: 14px;
+  }
+
+  .rt-item-serving {
+    font-size: 10px;
+    white-space: normal;
+    text-align: right;
+  }
+}

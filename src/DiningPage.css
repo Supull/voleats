@@ -301,3 +301,58 @@
   color: rgba(245, 240, 232, 0.18);
   letter-spacing: 0.05em;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dp-nav {
+    padding: 14px 20px;
+  }
+
+  .dp-nav-logo-text {
+    display: none;
+  }
+
+  .dp-hero {
+    padding: 40px 20px 36px;
+  }
+
+  .dp-hero-bg {
+    font-size: 160px;
+    opacity: 0.025;
+  }
+
+  .dp-hero-title {
+    font-size: clamp(32px, 9vw, 48px);
+  }
+
+  .dp-hero-meta {
+    gap: 10px;
+  }
+
+  .dp-hero-meta-dot {
+    display: none;
+  }
+
+  .dp-tabs {
+    padding: 16px 20px 0;
+    gap: 2px;
+  }
+
+  .dp-tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .dp-content {
+    padding: 24px 20px;
+  }
+
+  .dp-footer {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+}
