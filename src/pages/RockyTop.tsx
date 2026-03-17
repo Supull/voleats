@@ -7,11 +7,17 @@ const MEAL_PERIODS = ["Breakfast", "Lunch", "Dinner"] as const;
 type MealPeriod = typeof MEAL_PERIODS[number];
 
 interface MenuItem {
-  menu_item_id:           string;
-  menu_item_title:        string;
-  menu_item_period:       string;
+  menu_item_id:            string;
+  menu_item_title:         string;
+  menu_item_period:        string;
   menu_item__sub_location: string;
-  serving_size_display:   string;
+  serving_size_display:    string;
+  recipe_serving_size_id:  number;
+}
+
+interface NutritionItem {
+  calories: number | null;
+  protein:  number | null;
 }
 
 function getCurrentMeal(): MealPeriod {
@@ -25,7 +31,6 @@ function getTodayDate(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-// group items by station
 function groupByStation(items: MenuItem[]): Record<string, MenuItem[]> {
   return items.reduce((acc, item) => {
     const station = item.menu_item__sub_location.trim();
@@ -39,8 +44,8 @@ export default function RockyTop() {
   const navigate = useNavigate();
   const [activePeriod, setActivePeriod] = useState<MealPeriod>(getCurrentMeal());
   const [menuItems, setMenuItems]       = useState<MenuItem[]>([]);
+  const [nutrition, setNutrition]       = useState<Record<string, NutritionItem>>({});
   const [fetchStatus, setFetchStatus]   = useState<"loading" | "success" | "error">("loading");
-  const [corsBlocked, setCorsBlocked]   = useState(false);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
@@ -48,37 +53,41 @@ export default function RockyTop() {
 
   useEffect(() => {
     const date = getTodayDate();
-    const url  = `/api/menu?service_area_id=125621&date=${date}`;
 
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (data?.success && Array.isArray(data?.data?.menu_items)) {
-          setMenuItems(data.data.menu_items);
-          setFetchStatus("success");
-        } else {
-          setFetchStatus("error");
+    // fetch menu and nutrition in parallel
+    Promise.all([
+      fetch(`/api/menu?service_area_id=125621&date=${date}`).then((r) => r.json()),
+      fetch(`/api/nutrition?service_area_id=125621&date=${date}`).then((r) => r.json()),
+    ])
+      .then(([menuData, nutritionData]) => {
+        if (menuData?.success && Array.isArray(menuData?.data?.menu_items)) {
+          setMenuItems(menuData.data.menu_items);
         }
-      })
-      .catch((err) => {
-        if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-          setCorsBlocked(true);
+
+        // nutrition is keyed by recipe_id, each value is an array — grab first entry
+        if (nutritionData?.success && nutritionData?.data?.nutrition) {
+          const map: Record<string, NutritionItem> = {};
+          const raw = nutritionData.data.nutrition;
+          for (const id in raw) {
+            const entry = raw[id][0];
+            if (entry) {
+              map[id] = {
+                calories: entry.calories ?? null,
+                protein:  entry.protein  ?? null,
+              };
+            }
+          }
+          setNutrition(map);
         }
-        setFetchStatus("error");
-      });
+
+        setFetchStatus("success");
+      })
+      .catch(() => setFetchStatus("error"));
   }, []);
 
-  // filter by active meal period
-  const periodItems = menuItems.filter(
-    (item) => item.menu_item_period === activePeriod
-  );
-
-  // group filtered items by station
-  const grouped = groupByStation(periodItems);
-  const stations = Object.keys(grouped).sort();
+  const periodItems = menuItems.filter((item) => item.menu_item_period === activePeriod);
+  const grouped     = groupByStation(periodItems);
+  const stations    = Object.keys(grouped).sort();
 
   return (
     <div className="dining-page">
@@ -135,7 +144,6 @@ export default function RockyTop() {
       <div className="dp-content">
         <div className="dp-content-inner">
 
-          {/* Loading */}
           {fetchStatus === "loading" && (
             <div className="dp-placeholder">
               <div className="rt-spinner" />
@@ -143,22 +151,14 @@ export default function RockyTop() {
             </div>
           )}
 
-          {/* CORS / Error */}
           {fetchStatus === "error" && (
             <div className="dp-placeholder">
               <div className="dp-placeholder-icon">⚠️</div>
-              <p className="dp-placeholder-title">
-                {corsBlocked ? "CORS blocked the request" : "Couldn't load menu"}
-              </p>
-              <p className="dp-placeholder-sub">
-                {corsBlocked
-                  ? "UTK's API blocked the direct fetch — we'll need a proxy"
-                  : "Check your connection and try again"}
-              </p>
+              <p className="dp-placeholder-title">Couldn't load menu</p>
+              <p className="dp-placeholder-sub">Check your connection and try again</p>
             </div>
           )}
 
-          {/* Menu */}
           {fetchStatus === "success" && stations.length === 0 && (
             <div className="dp-placeholder">
               <div className="dp-placeholder-icon">🍽</div>
@@ -173,17 +173,24 @@ export default function RockyTop() {
                 <div key={station} className="rt-station">
                   <div className="rt-station-header">
                     <span className="rt-station-name">{station}</span>
-                    <span className="rt-station-count">
-                      {grouped[station].length} items
-                    </span>
+                    <span className="rt-station-count">{grouped[station].length} items</span>
                   </div>
                   <div className="rt-items">
-                    {grouped[station].map((item) => (
-                      <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="rt-item">
-                        <span className="rt-item-name">{item.menu_item_title}</span>
-                        <span className="rt-item-serving">{item.serving_size_display}</span>
-                      </div>
-                    ))}
+                    {grouped[station].map((item) => {
+                      const nut = nutrition[item.menu_item_id];
+                      const cal = nut?.calories != null ? Math.round(nut.calories) : null;
+                      return (
+                        <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="rt-item">
+                          <div className="rt-item-left">
+                            <span className="rt-item-name">{item.menu_item_title}</span>
+                            <span className="rt-item-serving">{item.serving_size_display}</span>
+                          </div>
+                          {cal !== null && (
+                            <span className="rt-item-calories">{cal} cal</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
