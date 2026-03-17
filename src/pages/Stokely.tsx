@@ -14,6 +14,11 @@ interface MenuItem {
   serving_size_display:    string;
 }
 
+interface NutritionItem {
+  calories: number | null;
+  protein:  number | null;
+}
+
 function getCurrentMeal(): MealPeriod {
   const h = new Date().getHours();
   if (h < 10) return "Breakfast";
@@ -38,8 +43,8 @@ export default function Stokely() {
   const navigate = useNavigate();
   const [activePeriod, setActivePeriod] = useState<MealPeriod>(getCurrentMeal());
   const [menuItems, setMenuItems]       = useState<MenuItem[]>([]);
+  const [nutrition, setNutrition]       = useState<Record<string, NutritionItem>>({});
   const [fetchStatus, setFetchStatus]   = useState<"loading" | "success" | "error">("loading");
-  const [corsBlocked, setCorsBlocked]   = useState(false);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
@@ -47,27 +52,34 @@ export default function Stokely() {
 
   useEffect(() => {
     const date = getTodayDate();
-    const url  = `/api/menu?service_area_id=116094&date=${date}`;
 
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (data?.success && Array.isArray(data?.data?.menu_items)) {
-          setMenuItems(data.data.menu_items);
-          setFetchStatus("success");
-        } else {
-          setFetchStatus("error");
+    Promise.all([
+      fetch(`/api/menu?service_area_id=116094&date=${date}`).then((r) => r.json()),
+      fetch(`/api/nutrition?service_area_id=116094&date=${date}`).then((r) => r.json()),
+    ])
+      .then(([menuData, nutritionData]) => {
+        if (menuData?.success && Array.isArray(menuData?.data?.menu_items)) {
+          setMenuItems(menuData.data.menu_items);
         }
-      })
-      .catch((err) => {
-        if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-          setCorsBlocked(true);
+
+        if (nutritionData?.success && nutritionData?.data?.nutrition) {
+          const map: Record<string, NutritionItem> = {};
+          const raw = nutritionData.data.nutrition;
+          for (const id in raw) {
+            const entry = raw[id][0];
+            if (entry) {
+              map[id] = {
+                calories: entry.calories ?? null,
+                protein:  entry.protein  ?? null,
+              };
+            }
+          }
+          setNutrition(map);
         }
-        setFetchStatus("error");
-      });
+
+        setFetchStatus("success");
+      })
+      .catch(() => setFetchStatus("error"));
   }, []);
 
   const periodItems = menuItems.filter((item) => item.menu_item_period === activePeriod);
@@ -139,14 +151,8 @@ export default function Stokely() {
           {fetchStatus === "error" && (
             <div className="dp-placeholder">
               <div className="dp-placeholder-icon">⚠️</div>
-              <p className="dp-placeholder-title">
-                {corsBlocked ? "CORS blocked the request" : "Couldn't load menu"}
-              </p>
-              <p className="dp-placeholder-sub">
-                {corsBlocked
-                  ? "UTK's API blocked the direct fetch — we'll need a proxy"
-                  : "Check your connection and try again"}
-              </p>
+              <p className="dp-placeholder-title">Couldn't load menu</p>
+              <p className="dp-placeholder-sub">Check your connection and try again</p>
             </div>
           )}
 
@@ -167,12 +173,21 @@ export default function Stokely() {
                     <span className="sk-station-count">{grouped[station].length} items</span>
                   </div>
                   <div className="sk-items">
-                    {grouped[station].map((item) => (
-                      <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="sk-item">
-                        <span className="sk-item-name">{item.menu_item_title}</span>
-                        <span className="sk-item-serving">{item.serving_size_display}</span>
-                      </div>
-                    ))}
+                    {grouped[station].map((item) => {
+                      const nut = nutrition[item.menu_item_id];
+                      const cal = nut?.calories != null ? Math.round(nut.calories) : null;
+                      return (
+                        <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="sk-item">
+                          <div className="sk-item-left">
+                            <span className="sk-item-name">{item.menu_item_title}</span>
+                            <span className="sk-item-serving">{item.serving_size_display}</span>
+                          </div>
+                          {cal !== null && (
+                            <span className="sk-item-calories">{cal} cal</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

@@ -64,6 +64,7 @@
   padding: 14px 20px;
   border-bottom: 1px solid rgba(245, 240, 232, 0.05);
   transition: background 0.15s ease;
+  gap: 12px;
 }
 
 .sk-item:last-child {
@@ -72,6 +73,14 @@
 
 .sk-item:hover {
   background: rgba(245, 240, 232, 0.03);
+}
+
+.sk-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 
 .sk-item-name {
@@ -85,8 +94,18 @@
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   color: rgba(245, 240, 232, 0.3);
+}
+
+.sk-item-calories {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: #FF6B35;
   white-space: nowrap;
-  margin-left: 16px;
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  padding: 3px 10px;
+  border-radius: 100px;
 }
 
 /* ── Responsive ── */
@@ -101,16 +120,14 @@
 
   .sk-item {
     padding: 12px 16px;
-    gap: 12px;
   }
 
   .sk-item-name {
     font-size: 14px;
   }
 
-  .sk-item-serving {
-    font-size: 10px;
-    white-space: normal;
-    text-align: right;
+  .sk-item-calories {
+    font-size: 11px;
+    padding: 2px 8px;
   }
 }
