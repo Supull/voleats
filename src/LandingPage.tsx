@@ -8,15 +8,6 @@ const DINING_HALLS = [
   { id: 2, name: "Stokely Dining Hall",   hours: "7AM – 8PM",  tag: "All Day",      route: "/stokely"   },
 ];
 
-const TAGS = [
-  { label: "High Protein", emoji: "💪", color: "#FF6B35" },
-  { label: "Vegetarian",   emoji: "🥦", color: "#4CAF50" },
-  { label: "Vegan",        emoji: "🌱", color: "#8BC34A" },
-  { label: "Low Calorie",  emoji: "⚡", color: "#00BCD4" },
-  { label: "Gluten Free",  emoji: "🌾", color: "#FF9800" },
-  { label: "Halal",        emoji: "✦", color: "#9C27B0"  },
-];
-
 const TICKER_ITEMS = [
   "NOW SERVING", "ROCKY TOP DINING HALL", "•",
   "STOKELY DINING HALL", "•", "FRESH DAILY", "•",
@@ -34,10 +25,9 @@ export default function LandingPage() {
   const { user, loading, error } = useAuth();
   const navigate = useNavigate();
 
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [loaded, setLoaded]             = useState(false);
-  const [time, setTime]                 = useState(new Date());
-  const [showModal, setShowModal]       = useState(false);
+  const [loaded, setLoaded]       = useState(false);
+  const [time, setTime]           = useState(new Date());
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const loadTimer  = setTimeout(() => setLoaded(true), 100);
@@ -50,12 +40,6 @@ export default function LandingPage() {
 
   const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setShowModal(false);
-  };
-
-  const toggleTag = (label: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(label) ? prev.filter((t) => t !== label) : [...prev, label]
-    );
   };
 
   const meal     = getCurrentMeal();
@@ -163,23 +147,7 @@ export default function LandingPage() {
           <span className="hero-title-accent">Vol.</span>
         </h1>
 
-        <div className={`tags-row fade-up ${loaded ? "loaded" : ""}`} style={cls("0.25s")}>
-          {TAGS.map((tag) => {
-            const active = selectedTags.includes(tag.label);
-            return (
-              <button
-                key={tag.label}
-                className={`tag-chip${active ? " active" : ""}`}
-                onClick={() => toggleTag(tag.label)}
-                style={active ? { background: tag.color, borderColor: tag.color } : undefined}
-              >
-                {tag.emoji} {tag.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className={`cta-row fade-up ${loaded ? "loaded" : ""}`} style={cls("0.3s")}>
+        <div className={`cta-row fade-up ${loaded ? "loaded" : ""}`} style={cls("0.2s")}>
           <button className="cta-btn" onClick={() => setShowModal(true)}>
             View Today's Menu →
           </button>
@@ -191,12 +159,12 @@ export default function LandingPage() {
 
       {/* ── Dining Halls ── */}
       <section className="halls-section">
-        <div className={`halls-header fade-up ${loaded ? "loaded" : ""}`} style={cls("0.35s")}>
+        <div className={`halls-header fade-up ${loaded ? "loaded" : ""}`} style={cls("0.25s")}>
           <span className="halls-label">Dining Halls</span>
           <span className="halls-count">2 locations</span>
         </div>
 
-        <div className={`halls-grid fade-up ${loaded ? "loaded" : ""}`} style={cls("0.4s")}>
+        <div className={`halls-grid fade-up ${loaded ? "loaded" : ""}`} style={cls("0.3s")}>
           {DINING_HALLS.map((hall) => (
             <div key={hall.id} className="hall-card" onClick={() => navigate(hall.route)}>
               <div className="hall-card-top">

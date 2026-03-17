@@ -12,7 +12,6 @@ interface MenuItem {
   menu_item_period:        string;
   menu_item__sub_location: string;
   serving_size_display:    string;
-  recipe_serving_size_id:  number;
 }
 
 interface NutritionItem {
@@ -40,12 +39,27 @@ function groupByStation(items: MenuItem[]): Record<string, MenuItem[]> {
   }, {} as Record<string, MenuItem[]>);
 }
 
+function isHighProtein(nut: NutritionItem | undefined): boolean {
+  if (!nut || nut.protein == null) return false;
+  const ratio = (nut.calories && nut.calories > 0)
+    ? (nut.protein * 4) / nut.calories
+    : 0;
+  return nut.protein >= 15 && ratio >= 0.25;
+}
+
+function isLowCalorie(nut: NutritionItem | undefined): boolean {
+  if (!nut || nut.calories == null) return false;
+  return nut.calories < 200;
+}
+
 export default function RockyTop() {
   const navigate = useNavigate();
-  const [activePeriod, setActivePeriod] = useState<MealPeriod>(getCurrentMeal());
-  const [menuItems, setMenuItems]       = useState<MenuItem[]>([]);
-  const [nutrition, setNutrition]       = useState<Record<string, NutritionItem>>({});
-  const [fetchStatus, setFetchStatus]   = useState<"loading" | "success" | "error">("loading");
+  const [activePeriod, setActivePeriod]       = useState<MealPeriod>(getCurrentMeal());
+  const [menuItems, setMenuItems]             = useState<MenuItem[]>([]);
+  const [nutrition, setNutrition]             = useState<Record<string, NutritionItem>>({});
+  const [fetchStatus, setFetchStatus]         = useState<"loading" | "success" | "error">("loading");
+  const [filterProtein, setFilterProtein]     = useState(false);
+  const [filterLowCal, setFilterLowCal]       = useState(false);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
@@ -53,8 +67,6 @@ export default function RockyTop() {
 
   useEffect(() => {
     const date = getTodayDate();
-
-    // fetch menu and nutrition in parallel
     Promise.all([
       fetch(`/api/menu?service_area_id=125621&date=${date}`).then((r) => r.json()),
       fetch(`/api/nutrition?service_area_id=125621&date=${date}`).then((r) => r.json()),
@@ -63,23 +75,15 @@ export default function RockyTop() {
         if (menuData?.success && Array.isArray(menuData?.data?.menu_items)) {
           setMenuItems(menuData.data.menu_items);
         }
-
-        // nutrition is keyed by recipe_id, each value is an array — grab first entry
         if (nutritionData?.success && nutritionData?.data?.nutrition) {
           const map: Record<string, NutritionItem> = {};
           const raw = nutritionData.data.nutrition;
           for (const id in raw) {
             const entry = raw[id][0];
-            if (entry) {
-              map[id] = {
-                calories: entry.calories ?? null,
-                protein:  entry.protein  ?? null,
-              };
-            }
+            if (entry) map[id] = { calories: entry.calories ?? null, protein: entry.protein ?? null };
           }
           setNutrition(map);
         }
-
         setFetchStatus("success");
       })
       .catch(() => setFetchStatus("error"));
@@ -88,6 +92,13 @@ export default function RockyTop() {
   const periodItems = menuItems.filter((item) => item.menu_item_period === activePeriod);
   const grouped     = groupByStation(periodItems);
   const stations    = Object.keys(grouped).sort();
+
+  const passesFilter = (item: MenuItem): boolean => {
+    const nut = nutrition[item.menu_item_id];
+    if (filterProtein && !isHighProtein(nut)) return false;
+    if (filterLowCal  && !isLowCalorie(nut))  return false;
+    return true;
+  };
 
   return (
     <div className="dining-page">
@@ -118,11 +129,7 @@ export default function RockyTop() {
             <span>Dining Hall</span>
           </h1>
           <div className="dp-hero-meta">
-            <span className="dp-hero-meta-item">🕐 7AM – 10PM</span>
-            <span className="dp-hero-meta-dot">·</span>
             <span className="dp-hero-meta-item">📅 {today}</span>
-            <span className="dp-hero-meta-dot">·</span>
-            <span className="dp-hero-meta-item">📍 University Center</span>
           </div>
         </div>
       </div>
@@ -159,42 +166,67 @@ export default function RockyTop() {
             </div>
           )}
 
-          {fetchStatus === "success" && stations.length === 0 && (
-            <div className="dp-placeholder">
-              <div className="dp-placeholder-icon">🍽</div>
-              <p className="dp-placeholder-title">No items for {activePeriod}</p>
-              <p className="dp-placeholder-sub">Try another meal period</p>
-            </div>
-          )}
+          {fetchStatus === "success" && (
+            <>
+              {/* ── Filters ── */}
+              <div className="rt-filters">
+                <button
+                  className={`rt-filter-btn${filterProtein ? " active-protein" : ""}`}
+                  onClick={() => setFilterProtein((p) => !p)}
+                >
+                  💪 High Protein
+                </button>
+                <button
+                  className={`rt-filter-btn${filterLowCal ? " active-lowcal" : ""}`}
+                  onClick={() => setFilterLowCal((p) => !p)}
+                >
+                  ⚡ Low Calorie
+                </button>
+              </div>
 
-          {fetchStatus === "success" && stations.length > 0 && (
-            <div className="rt-menu">
-              {stations.map((station) => (
-                <div key={station} className="rt-station">
-                  <div className="rt-station-header">
-                    <span className="rt-station-name">{station}</span>
-                    <span className="rt-station-count">{grouped[station].length} items</span>
-                  </div>
-                  <div className="rt-items">
-                    {grouped[station].map((item) => {
-                      const nut = nutrition[item.menu_item_id];
-                      const cal = nut?.calories != null ? Math.round(nut.calories) : null;
-                      return (
-                        <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="rt-item">
-                          <div className="rt-item-left">
-                            <span className="rt-item-name">{item.menu_item_title}</span>
-                            <span className="rt-item-serving">{item.serving_size_display}</span>
-                          </div>
-                          {cal !== null && (
-                            <span className="rt-item-calories">{cal} cal</span>
+              {stations.length === 0 ? (
+                <div className="dp-placeholder">
+                  <div className="dp-placeholder-icon">🍽</div>
+                  <p className="dp-placeholder-title">No items for {activePeriod}</p>
+                  <p className="dp-placeholder-sub">Try another meal period</p>
+                </div>
+              ) : (
+                <div className="rt-menu">
+                  {stations.map((station) => {
+                    const filtered = grouped[station].filter(passesFilter);
+                    return (
+                      <div key={station} className="rt-station">
+                        <div className="rt-station-header">
+                          <span className="rt-station-name">{station}</span>
+                          <span className="rt-station-count">{grouped[station].length} items</span>
+                        </div>
+                        <div className="rt-items">
+                          {filtered.length === 0 ? (
+                            <div className="rt-no-match">No items match the active filters</div>
+                          ) : (
+                            filtered.map((item) => {
+                              const nut = nutrition[item.menu_item_id];
+                              const cal = nut?.calories != null ? Math.round(nut.calories) : null;
+                              return (
+                                <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="rt-item">
+                                  <div className="rt-item-left">
+                                    <span className="rt-item-name">{item.menu_item_title}</span>
+                                    <span className="rt-item-serving">{item.serving_size_display}</span>
+                                  </div>
+                                  {cal !== null && (
+                                    <span className="rt-item-calories">{cal} cal</span>
+                                  )}
+                                </div>
+                              );
+                            })
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
 
         </div>
