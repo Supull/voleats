@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../DiningPage.css";
+import "./Stokely.css";
 
 const MEAL_PERIODS = ["Breakfast", "Lunch", "Dinner"] as const;
 type MealPeriod = typeof MEAL_PERIODS[number];
+
+interface MenuItem {
+  menu_item_id:            string;
+  menu_item_title:         string;
+  menu_item_period:        string;
+  menu_item__sub_location: string;
+  serving_size_display:    string;
+}
 
 function getCurrentMeal(): MealPeriod {
   const h = new Date().getHours();
@@ -12,15 +21,58 @@ function getCurrentMeal(): MealPeriod {
   return "Dinner";
 }
 
+function getTodayDate(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+function groupByStation(items: MenuItem[]): Record<string, MenuItem[]> {
+  return items.reduce((acc, item) => {
+    const station = item.menu_item__sub_location.trim();
+    if (!acc[station]) acc[station] = [];
+    acc[station].push(item);
+    return acc;
+  }, {} as Record<string, MenuItem[]>);
+}
+
 export default function Stokely() {
   const navigate = useNavigate();
   const [activePeriod, setActivePeriod] = useState<MealPeriod>(getCurrentMeal());
+  const [menuItems, setMenuItems]       = useState<MenuItem[]>([]);
+  const [fetchStatus, setFetchStatus]   = useState<"loading" | "success" | "error">("loading");
+  const [corsBlocked, setCorsBlocked]   = useState(false);
 
   const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
+    weekday: "long", month: "long", day: "numeric",
   });
+
+  useEffect(() => {
+    const date = getTodayDate();
+    const url  = `/api/menu?service_area_id=116094&date=${date}`;
+
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (data?.success && Array.isArray(data?.data?.menu_items)) {
+          setMenuItems(data.data.menu_items);
+          setFetchStatus("success");
+        } else {
+          setFetchStatus("error");
+        }
+      })
+      .catch((err) => {
+        if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+          setCorsBlocked(true);
+        }
+        setFetchStatus("error");
+      });
+  }, []);
+
+  const periodItems = menuItems.filter((item) => item.menu_item_period === activePeriod);
+  const grouped     = groupByStation(periodItems);
+  const stations    = Object.keys(grouped).sort();
 
   return (
     <div className="dining-page">
@@ -29,9 +81,7 @@ export default function Stokely() {
       {/* ── Nav ── */}
       <nav className="dp-nav">
         <div className="dp-nav-left">
-          <button className="dp-back-btn" onClick={() => navigate("/")}>
-            ← Back
-          </button>
+          <button className="dp-back-btn" onClick={() => navigate("/")}>← Back</button>
           <div className="dp-nav-logo" onClick={() => navigate("/")}>
             <div className="dp-nav-logo-icon">🍽</div>
             <span className="dp-nav-logo-text">VolEats</span>
@@ -78,11 +128,57 @@ export default function Stokely() {
       {/* ── Content ── */}
       <div className="dp-content">
         <div className="dp-content-inner">
-          <div className="dp-placeholder">
-            <div className="dp-placeholder-icon">🍽</div>
-            <p className="dp-placeholder-title">{activePeriod} menu coming soon</p>
-            <p className="dp-placeholder-sub">STOKELY · LOADING MENU DATA</p>
-          </div>
+
+          {fetchStatus === "loading" && (
+            <div className="dp-placeholder">
+              <div className="sk-spinner" />
+              <p className="dp-placeholder-sub">FETCHING TODAY'S MENU...</p>
+            </div>
+          )}
+
+          {fetchStatus === "error" && (
+            <div className="dp-placeholder">
+              <div className="dp-placeholder-icon">⚠️</div>
+              <p className="dp-placeholder-title">
+                {corsBlocked ? "CORS blocked the request" : "Couldn't load menu"}
+              </p>
+              <p className="dp-placeholder-sub">
+                {corsBlocked
+                  ? "UTK's API blocked the direct fetch — we'll need a proxy"
+                  : "Check your connection and try again"}
+              </p>
+            </div>
+          )}
+
+          {fetchStatus === "success" && stations.length === 0 && (
+            <div className="dp-placeholder">
+              <div className="dp-placeholder-icon">🍽</div>
+              <p className="dp-placeholder-title">No items for {activePeriod}</p>
+              <p className="dp-placeholder-sub">Try another meal period</p>
+            </div>
+          )}
+
+          {fetchStatus === "success" && stations.length > 0 && (
+            <div className="sk-menu">
+              {stations.map((station) => (
+                <div key={station} className="sk-station">
+                  <div className="sk-station-header">
+                    <span className="sk-station-name">{station}</span>
+                    <span className="sk-station-count">{grouped[station].length} items</span>
+                  </div>
+                  <div className="sk-items">
+                    {grouped[station].map((item) => (
+                      <div key={`${item.menu_item_id}-${item.serving_size_display}`} className="sk-item">
+                        <span className="sk-item-name">{item.menu_item_title}</span>
+                        <span className="sk-item-serving">{item.serving_size_display}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
 

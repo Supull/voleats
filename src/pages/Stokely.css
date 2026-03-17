@@ -1,0 +1,116 @@
+/* ── Spinner ── */
+.sk-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(245, 240, 232, 0.1);
+  border-top-color: #FF6B35;
+  border-radius: 50%;
+  animation: sk-spin 0.8s linear infinite;
+}
+
+@keyframes sk-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Menu grid ── */
+.sk-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ── Station block ── */
+.sk-station {
+  border: 1px solid rgba(245, 240, 232, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sk-station-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: rgba(255, 107, 53, 0.07);
+  border-bottom: 1px solid rgba(245, 240, 232, 0.08);
+}
+
+.sk-station-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #FF6B35;
+  font-family: 'DM Mono', monospace;
+}
+
+.sk-station-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(245, 240, 232, 0.25);
+  letter-spacing: 0.05em;
+}
+
+/* ── Item rows ── */
+.sk-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.sk-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(245, 240, 232, 0.05);
+  transition: background 0.15s ease;
+}
+
+.sk-item:last-child {
+  border-bottom: none;
+}
+
+.sk-item:hover {
+  background: rgba(245, 240, 232, 0.03);
+}
+
+.sk-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(245, 240, 232, 0.9);
+  letter-spacing: -0.01em;
+}
+
+.sk-item-serving {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(245, 240, 232, 0.3);
+  white-space: nowrap;
+  margin-left: 16px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sk-station-header {
+    padding: 12px 16px;
+  }
+
+  .sk-station-name {
+    font-size: 11px;
+  }
+
+  .sk-item {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .sk-item-name {
+    font-size: 14px;
+  }
+
+  .sk-item-serving {
+    font-size: 10px;
+    white-space: normal;
+    text-align: right;
+  }
+}
