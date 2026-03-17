@@ -179,3 +179,9 @@
   color: rgba(245, 240, 232, 0.25);
   letter-spacing: 0.05em;
 }
+
+.sk-filter-btn.active-ratio {
+  background: #4CAF50;
+  border-color: #4CAF50;
+  color: #0A0A0A;
+}

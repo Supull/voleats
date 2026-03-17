@@ -41,15 +41,18 @@ function groupByStation(items: MenuItem[]): Record<string, MenuItem[]> {
 
 function isHighProtein(nut: NutritionItem | undefined): boolean {
   if (!nut || nut.protein == null) return false;
-  const ratio = (nut.calories && nut.calories > 0)
-    ? (nut.protein * 4) / nut.calories
-    : 0;
-  return nut.protein >= 15 && ratio >= 0.25;
+  const ratio = (nut.calories && nut.calories > 0) ? (nut.protein * 4) / nut.calories : 0;
+  return nut.protein >= 10 && ratio >= 0.25;
 }
 
 function isLowCalorie(nut: NutritionItem | undefined): boolean {
   if (!nut || nut.calories == null) return false;
   return nut.calories < 200;
+}
+
+function isHighRatio(nut: NutritionItem | undefined): boolean {
+  if (!nut || nut.protein == null || !nut.calories || nut.calories <= 0) return false;
+  return (nut.protein * 4) / nut.calories >= 0.25;
 }
 
 export default function Stokely() {
@@ -60,6 +63,7 @@ export default function Stokely() {
   const [fetchStatus, setFetchStatus]     = useState<"loading" | "success" | "error">("loading");
   const [filterProtein, setFilterProtein] = useState(false);
   const [filterLowCal, setFilterLowCal]   = useState(false);
+  const [filterRatio, setFilterRatio]     = useState(false);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
@@ -97,6 +101,7 @@ export default function Stokely() {
     const nut = nutrition[item.menu_item_id];
     if (filterProtein && !isHighProtein(nut)) return false;
     if (filterLowCal  && !isLowCalorie(nut))  return false;
+    if (filterRatio   && !isHighRatio(nut))   return false;
     return true;
   };
 
@@ -181,6 +186,12 @@ export default function Stokely() {
                   onClick={() => setFilterLowCal((p) => !p)}
                 >
                   ⚡ Low Calorie
+                </button>
+                <button
+                  className={`sk-filter-btn${filterRatio ? " active-ratio" : ""}`}
+                  onClick={() => setFilterRatio((p) => !p)}
+                >
+                  📊 Protein Ratio &gt;25%
                 </button>
               </div>
 
