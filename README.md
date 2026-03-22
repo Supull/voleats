@@ -2,8 +2,6 @@
 
 A real-time dining menu app for University of Tennessee Knoxville students. Browse today's menu at Rocky Top and Stokely dining halls, filter by dietary preferences, and check calories and protein for every item.
 
-**Live at:** [voleats.vercel.app](https://voleats.vercel.app)
-
 ---
 
 ## Features
