@@ -1,41 +1,157 @@
-VolEats
+# VolEats
+
 A real-time dining menu app for University of Tennessee Knoxville students. Browse today's menu at Rocky Top and Stokely dining halls, filter by dietary preferences, and check calories and protein for every item.
 
-Features
-Live menus — fetches today's menu directly from UTK Dining, updated daily
-Two dining halls — Rocky Top Dining Hall and Stokely Dining Hall
-Meal period tabs — switch between Breakfast, Lunch, and Dinner
-Nutrition display — calories and protein shown for every item
+**Live at:** [voleats.vercel.app](https://voleats.vercel.app)
 
-Anonymous auth — no sign-up required, Firebase handles sessions automatically
-Mobile responsive — works on phone and laptop
+---
 
-Tech Stack
-LayerTechFrontendReact + TypeScript + ViteStylingPlain CSSAuthFirebase Anonymous AuthProxyVercel Serverless FunctionsDeploymentVercelData SourceUTK Dining API
+## Features
 
-How It Works
+- **Live menus** — fetches today's menu directly from UTK Dining, updated daily
+- **Two dining halls** — Rocky Top Dining Hall and Stokely Dining Hall
+- **Meal period tabs** — switch between Breakfast, Lunch, and Dinner
+- **Nutrition display** — calories and protein shown for every item
+- **7 filters** — filter menu items by:
+  - High Protein (>=10g)
+  - Low Calorie (<200 cal)
+  - Protein Ratio >25%
+  - Vegetarian
+  - Vegan
+  - Dairy-Free
+  - Gluten-Free
+- **Anonymous auth** — no sign-up required, Firebase handles sessions automatically
+- **Mobile responsive** — works on phone and laptop
+
+---
+
+## Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | React + TypeScript + Vite |
+| Styling | Plain CSS |
+| Auth | Firebase Anonymous Auth |
+| Proxy | Vercel Serverless Functions |
+| Deployment | Vercel |
+| Data Source | UTK Dining API |
+
+---
+
+## Project Structure
+
+```
+VolEats/my-react-app/
+├── api/
+│   ├── menu.ts           # Vercel proxy -> UTK menu API
+│   └── nutrition.ts      # Vercel proxy -> UTK nutrition API
+├── src/
+│   ├── config/
+│   │   └── firebase.ts   # Firebase init
+│   ├── hooks/
+│   │   └── useAuth.ts    # Anonymous auth hook
+│   ├── pages/
+│   │   ├── RockyTop.tsx  # Rocky Top Dining Hall page
+│   │   ├── RockyTop.css
+│   │   ├── Stokely.tsx   # Stokely Dining Hall page
+│   │   └── Stokely.css
+│   ├── App.tsx           # Routing
+│   ├── LandingPage.tsx   # Home page
+│   ├── LandingPage.css
+│   └── DiningPage.css    # Shared dining page styles
+├── .env                  # Local environment variables (not committed)
+└── vite.config.ts        # Vite + local dev proxy config
+```
+
+---
+
+## How It Works
+
 UTK's dining site blocks direct browser requests (CORS). To get around this, the app uses Vercel Serverless Functions as a proxy:
+
+```
 React App -> /api/menu (Vercel function) -> UTK Dining API
 React App -> /api/nutrition (Vercel function) -> UTK Nutrition API
+```
+
 This means requests happen server-side, never exposed to the browser.
 
-Getting Started
-Node.js 18+
-A Firebase project with Anonymous Auth enabled
-A Vercel account
+---
 
-Installation
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- A Firebase project with Anonymous Auth enabled
+- A Vercel account
+
+### Installation
+
+```bash
 git clone https://github.com/Supull/voleats.git
 cd voleats/my-react-app
 npm install
+```
 
-Running Locally
+### Environment Variables
+
+Create a `.env` file in `my-react-app/`:
+
+```env
+VITE_FIREBASE_API_KEY=your_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+### Running Locally
+
+```bash
 npm run dev
-The vite.config.ts proxies /api/menu and /api/nutrition to UTK's servers during local development so you don't need to deploy to test.
+```
 
-Deploying
-Push to GitHub — Vercel auto-deploys on every push to main.
-Make sure to add all environment variables in Vercel -> Project Settings -> Environment Variables.
+The `vite.config.ts` proxies `/api/menu` and `/api/nutrition` to UTK's servers during local development so you don't need to deploy to test.
 
-Disclaimer
-This app is an independent personal student project and is not affiliated with or endorsed by the University of Tennessee. Menu data is sourced from UTK's public dining website. 
+### Deploying
+
+Push to GitHub — Vercel auto-deploys on every push to `main`.
+
+Make sure to add all environment variables in **Vercel -> Project Settings -> Environment Variables**.
+
+---
+
+## Dining Hall IDs
+
+| Dining Hall | service_area_id |
+|---|---|
+| Rocky Top Dining Hall | 125621 |
+| Stokely Dining Hall | 116094 |
+
+---
+
+## Filter Logic
+
+| Filter | Condition |
+|---|---|
+| High Protein | protein >= 10g AND (protein x 4) / calories >= 0.25 |
+| Low Calorie | calories < 200 |
+| Protein Ratio >25% | (protein x 4) / calories >= 0.25 |
+| Vegetarian | vegetarian === "Y" |
+| Vegan | vegan === "Y" |
+| Dairy-Free | contains_milk === "N" |
+| Gluten-Free | contains_gluten === "N" |
+
+---
+
+## Disclaimer
+
+This app is an independent student project and is not affiliated with or endorsed by the University of Tennessee. Menu data is sourced from UTK's public dining website. Nutrition information is provided for informational purposes only.
+
+---
+
+## License
+
+MIT
