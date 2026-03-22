@@ -80,20 +80,6 @@ cd voleats/my-react-app
 npm install
 ```
 
-### Environment Variables
-
-Create a `.env` file in `my-react-app/`:
-
-```env
-VITE_FIREBASE_API_KEY=your_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
-```
-
 ### Running Locally
 
 ```bash
@@ -105,7 +91,6 @@ The `vite.config.ts` proxies `/api/menu` and `/api/nutrition` to UTK's servers d
 ### Deploying
 
 Push to GitHub — Vercel auto-deploys on every push to `main`.
-
 Make sure to add all environment variables in **Vercel -> Project Settings -> Environment Variables**.
 
 ---
