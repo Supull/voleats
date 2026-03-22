@@ -1,73 +1,63 @@
-# React + TypeScript + Vite
+VolEats
+A real-time dining menu app for University of Tennessee Knoxville students. Browse today's menu at Rocky Top and Stokely dining halls, filter by dietary preferences, and check calories and protein for every item.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Features
+Live menus — fetches today's menu directly from UTK Dining, updated daily
+Two dining halls — Rocky Top Dining Hall and Stokely Dining Hall
+Meal period tabs — switch between Breakfast, Lunch, and Dinner
+Nutrition display — calories and protein shown for every item
 
-Currently, two official plugins are available:
+Anonymous auth — no sign-up required, Firebase handles sessions automatically
+Mobile responsive — works on phone and laptop
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Tech Stack
+LayerTechFrontendReact + TypeScript + ViteStylingPlain CSSAuthFirebase Anonymous AuthProxyVercel Serverless FunctionsDeploymentVercelData SourceUTK Dining API
 
-## React Compiler
+Project Structure
+VolEats/my-react-app/
+├── api/
+│   ├── menu.ts           # Vercel proxy -> UTK menu API
+│   └── nutrition.ts      # Vercel proxy -> UTK nutrition API
+├── src/
+│   ├── config/
+│   │   └── firebase.ts   # Firebase init
+│   ├── hooks/
+│   │   └── useAuth.ts    # Anonymous auth hook
+│   ├── pages/
+│   │   ├── RockyTop.tsx  # Rocky Top Dining Hall page
+│   │   ├── RockyTop.css
+│   │   ├── Stokely.tsx   # Stokely Dining Hall page
+│   │   └── Stokely.css
+│   ├── App.tsx           # Routing
+│   ├── LandingPage.tsx   # Home page
+│   ├── LandingPage.css
+│   └── DiningPage.css    # Shared dining page styles
+├── .env                  # Local environment variables (not committed)
+└── vite.config.ts        # Vite + local dev proxy config
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+How It Works
+UTK's dining site blocks direct browser requests (CORS). To get around this, the app uses Vercel Serverless Functions as a proxy:
+React App -> /api/menu (Vercel function) -> UTK Dining API
+React App -> /api/nutrition (Vercel function) -> UTK Nutrition API
+This means requests happen server-side, never exposed to the browser.
 
-## Expanding the ESLint configuration
+Getting Started
+Node.js 18+
+A Firebase project with Anonymous Auth enabled
+A Vercel account
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Installation
+git clone https://github.com/Supull/voleats.git
+cd voleats/my-react-app
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Running Locally
+npm run dev
+The vite.config.ts proxies /api/menu and /api/nutrition to UTK's servers during local development so you don't need to deploy to test.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Deploying
+Push to GitHub — Vercel auto-deploys on every push to main.
+Make sure to add all environment variables in Vercel -> Project Settings -> Environment Variables.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Disclaimer
+This app is an independent personal student project and is not affiliated with or endorsed by the University of Tennessee. Menu data is sourced from UTK's public dining website. 
