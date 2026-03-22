@@ -9,17 +9,6 @@ A real-time dining menu app for University of Tennessee Knoxville students. Brow
 ## Features
 
 - **Live menus** — fetches today's menu directly from UTK Dining, updated daily
-- **Two dining halls** — Rocky Top Dining Hall and Stokely Dining Hall
-- **Meal period tabs** — switch between Breakfast, Lunch, and Dinner
-- **Nutrition display** — calories and protein shown for every item
-- **7 filters** — filter menu items by:
-  - High Protein (>=10g)
-  - Low Calorie (<200 cal)
-  - Protein Ratio >25%
-  - Vegetarian
-  - Vegan
-  - Dairy-Free
-  - Gluten-Free
 - **Anonymous auth** — no sign-up required, Firebase handles sessions automatically
 - **Mobile responsive** — works on phone and laptop
 
@@ -123,35 +112,6 @@ Make sure to add all environment variables in **Vercel -> Project Settings -> En
 
 ---
 
-## Dining Hall IDs
-
-| Dining Hall | service_area_id |
-|---|---|
-| Rocky Top Dining Hall | 125621 |
-| Stokely Dining Hall | 116094 |
-
----
-
-## Filter Logic
-
-| Filter | Condition |
-|---|---|
-| High Protein | protein >= 10g AND (protein x 4) / calories >= 0.25 |
-| Low Calorie | calories < 200 |
-| Protein Ratio >25% | (protein x 4) / calories >= 0.25 |
-| Vegetarian | vegetarian === "Y" |
-| Vegan | vegan === "Y" |
-| Dairy-Free | contains_milk === "N" |
-| Gluten-Free | contains_gluten === "N" |
-
----
-
 ## Disclaimer
 
-This app is an independent student project and is not affiliated with or endorsed by the University of Tennessee. Menu data is sourced from UTK's public dining website. Nutrition information is provided for informational purposes only.
-
----
-
-## License
-
-MIT
+This app is an independent personal student project and is not affiliated with or endorsed by the University of Tennessee. Menu data is sourced from UTK's public dining website. Nutrition information is provided for informational purposes only.
