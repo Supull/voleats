@@ -13,28 +13,6 @@ Mobile responsive — works on phone and laptop
 Tech Stack
 LayerTechFrontendReact + TypeScript + ViteStylingPlain CSSAuthFirebase Anonymous AuthProxyVercel Serverless FunctionsDeploymentVercelData SourceUTK Dining API
 
-Project Structure
-VolEats/my-react-app/
-├── api/
-│   ├── menu.ts           # Vercel proxy -> UTK menu API
-│   └── nutrition.ts      # Vercel proxy -> UTK nutrition API
-├── src/
-│   ├── config/
-│   │   └── firebase.ts   # Firebase init
-│   ├── hooks/
-│   │   └── useAuth.ts    # Anonymous auth hook
-│   ├── pages/
-│   │   ├── RockyTop.tsx  # Rocky Top Dining Hall page
-│   │   ├── RockyTop.css
-│   │   ├── Stokely.tsx   # Stokely Dining Hall page
-│   │   └── Stokely.css
-│   ├── App.tsx           # Routing
-│   ├── LandingPage.tsx   # Home page
-│   ├── LandingPage.css
-│   └── DiningPage.css    # Shared dining page styles
-├── .env                  # Local environment variables (not committed)
-└── vite.config.ts        # Vite + local dev proxy config
-
 How It Works
 UTK's dining site blocks direct browser requests (CORS). To get around this, the app uses Vercel Serverless Functions as a proxy:
 React App -> /api/menu (Vercel function) -> UTK Dining API
