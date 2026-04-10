@@ -65,36 +65,6 @@ This means requests happen server-side, never exposed to the browser.
 
 ---
 
-## Getting Started
-
-### Prerequisites
-- Node.js 18+
-- A Firebase project with Anonymous Auth enabled
-- A Vercel account
-
-### Installation
-
-```bash
-git clone https://github.com/Supull/voleats.git
-cd voleats/my-react-app
-npm install
-```
-
-### Running Locally
-
-```bash
-npm run dev
-```
-
-The `vite.config.ts` proxies `/api/menu` and `/api/nutrition` to UTK's servers during local development so you don't need to deploy to test.
-
-### Deploying
-
-Push to GitHub — Vercel auto-deploys on every push to `main`.
-Make sure to add all environment variables in **Vercel -> Project Settings -> Environment Variables**.
-
----
-
 ## Disclaimer
 
 This app is an independent personal student project and is not affiliated with or endorsed by the University of Tennessee. Menu data is sourced from UTK's public dining website. Nutrition information is provided for informational purposes only.
